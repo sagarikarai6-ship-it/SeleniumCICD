@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: 2gb
+
+  jenkins-runner:
+    image: maven:3.9.6-eclipse-temurin-17
+    volumes:
+      - .:/app
+      - ~/.m2:/root/.m2
+    working_dir: /app
+    depends_on:
+      - selenium-chrome
+    command: mvn clean test -Dselenium.remote.url=http://selenium-chrome:4444/wd/hub
