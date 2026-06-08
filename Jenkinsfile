@@ -1,10 +1,5 @@
 pipeline {
-    agent any // Runs on the main Jenkins agent directly
-
-    tools {
-        // This links the 'Maven3' configuration we set up in Jenkins UI
-        maven 'Maven3' 
-    }
+    agent any
 
     stages {
         stage('Checkout Code') {
@@ -13,17 +8,18 @@ pipeline {
             }
         }
 
-        stage('Run Specific Selenium Test') {
+        stage('Run Automation Suite') {
             steps {
-                // This triggers your tests and passes the headless flag to your Java code
-                sh 'mvn clean test -Dtest=*Test -Dheadless=true'
+                // Shut down any stale instances and spin up the complete automated ecosystem
+                sh 'docker-compose down'
+                sh 'docker-compose up --abort-on-container-exit --exit-code-from jenkins-runner'
             }
         }
     }
-
+    
     post {
         always {
-            // Read results
+            sh 'docker-compose down'
             junit '**/target/surefire-reports/*.xml'
         }
     }
