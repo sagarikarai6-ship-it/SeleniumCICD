@@ -1,6 +1,11 @@
 pipeline {
     agent any // Runs on the main Jenkins agent directly
 
+    tools {
+        // This links the 'Maven3' configuration we set up in Jenkins UI
+        maven 'Maven3' 
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -10,14 +15,8 @@ pipeline {
 
         stage('Run Specific Selenium Test') {
             steps {
-                // OPTION 1: Run EVERYTHING in your test folder
-                // sh 'mvn test'
-
-                // OPTION 2: Run a SPECIFIC test class (Replace 'MyFirstSeleniumTest' with your actual Java class name!)
-                //sh 'mvn test -Dtest=*Test'
+                // This triggers your tests and passes the headless flag to your Java code
                 sh 'mvn clean test -Dtest=*Test -Dheadless=true'
-                // OPTION 3: Run a specific TestNG XML file if you have one configured
-                // sh 'mvn test -DsuiteXmlFile=testng.xml'
             }
         }
     }
