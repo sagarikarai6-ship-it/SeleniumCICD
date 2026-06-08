@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+        // Tells Jenkins to use the Maven configuration we set up in Tools UI
+        maven 'Maven3' 
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -10,16 +15,15 @@ pipeline {
 
         stage('Run Automation Suite') {
             steps {
-                // Shut down any stale instances and spin up the complete automated ecosystem
-                sh 'docker-compose down'
-                sh 'docker-compose up --abort-on-container-exit --exit-code-from jenkins-runner'
+                // We point the remote URL to host.docker.internal so the Jenkins container
+                // can seamlessly talk out to the Selenium Chrome container on your machine!
+                sh 'mvn clean test -Dtest=*Test -Dselenium.remote.url=http://host.docker.internal:4444/wd/hub'
             }
         }
     }
     
     post {
         always {
-            sh 'docker-compose down'
             junit '**/target/surefire-reports/*.xml'
         }
     }
