@@ -1,5 +1,5 @@
 pipeline {
-    agent any // Runs on the main Jenkins agent directly
+    agent any
 
     stages {
         stage('Checkout Code') {
@@ -8,23 +8,18 @@ pipeline {
             }
         }
 
-        stage('Run Specific Selenium Test') {
+        stage('Run Automation Suite') {
             steps {
-                // OPTION 1: Run EVERYTHING in your test folder
-                // sh 'mvn test'
-
-                // OPTION 2: Run a SPECIFIC test class (Replace 'MyFirstSeleniumTest' with your actual Java class name!)
-                //sh 'mvn test -Dtest=*Test'
-                sh 'mvn clean test -Dtest=*Test -Dheadless=true'
-                // OPTION 3: Run a specific TestNG XML file if you have one configured
-                // sh 'mvn test -DsuiteXmlFile=testng.xml'
+                // Shut down any stale instances and spin up the complete automated ecosystem
+                sh 'docker-compose down'
+                sh 'docker-compose up --abort-on-container-exit --exit-code-from jenkins-runner'
             }
         }
     }
-
+    
     post {
         always {
-            // Read results
+            sh 'docker-compose down'
             junit '**/target/surefire-reports/*.xml'
         }
     }
